@@ -43,6 +43,7 @@ class CCueDocument
     CStdString strTitle;
     CStdString strFile;
     CStdString strGenre;
+    CStdString strComment;
     int iTrackNumber;
     int iStartTime;
     int iEndTime;

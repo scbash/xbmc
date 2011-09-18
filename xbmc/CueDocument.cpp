@@ -212,6 +212,19 @@ bool CCueDocument::Parse(const CStdString &strFile)
         }
       }
     }
+    else if (strLine.Left(11) == "REM COMMENT")
+    {
+      if (!ExtractQuoteInfo(strLine, m_Track[m_iTotalTracks].strComment))
+      {
+        CStdString commentNoQuote = strLine.Mid(11);
+        commentNoQuote.TrimLeft();
+        if (!commentNoQuote.IsEmpty())
+        {
+          g_charsetConverter.unknownToUTF8(commentNoQuote);
+          m_Track[m_iTotalTracks].strComment = commentNoQuote;
+        }
+      }
+    }
     else if (strLine.Left(25) == "REM REPLAYGAIN_ALBUM_GAIN")
       m_replayGainAlbumGain = (float)atof(strLine.Mid(26));
     else if (strLine.Left(25) == "REM REPLAYGAIN_ALBUM_PEAK")
@@ -262,6 +275,7 @@ void CCueDocument::GetSongs(VECSONGS &songs)
     else
       song.strTitle = m_Track[i].strTitle;
     song.strFileName =  m_Track[i].strFile;
+    song.strComment = m_Track[i].strComment;
     song.iStartOffset = m_Track[i].iStartTime;
     song.iEndOffset = m_Track[i].iEndTime;
     if (song.iEndOffset)
