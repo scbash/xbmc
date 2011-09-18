@@ -42,6 +42,7 @@ class CCueDocument
     CStdString strArtist;
     CStdString strTitle;
     CStdString strFile;
+    CStdString strGenre;
     int iTrackNumber;
     int iStartTime;
     int iEndTime;
