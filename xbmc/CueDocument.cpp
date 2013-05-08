@@ -183,14 +183,45 @@ bool CCueDocument::Parse(const CStdString &strFile)
     }
     else if (strLine.Left(9) == "REM GENRE")
     {
-      if (!ExtractQuoteInfo(strLine, m_strGenre))
+      if (m_iTotalTracks == -1) // No tracks yet
       {
-        CStdString genreNoQuote = strLine.Mid(9);
-        genreNoQuote.TrimLeft();
-        if (!genreNoQuote.IsEmpty())
+        // Genre applies to whole disc
+        if (!ExtractQuoteInfo(strLine, m_strGenre))
         {
-          g_charsetConverter.unknownToUTF8(genreNoQuote);
-          m_strGenre = genreNoQuote;
+          CStdString genreNoQuote = strLine.Mid(9);
+          genreNoQuote.TrimLeft();
+          if (!genreNoQuote.IsEmpty())
+          {
+            g_charsetConverter.unknownToUTF8(genreNoQuote);
+            m_strGenre = genreNoQuote;
+          }
+        }
+      }
+      else
+      {
+        // Genre applies to single track
+        if (!ExtractQuoteInfo(strLine, m_Track[m_iTotalTracks].strGenre))
+        {
+          CStdString genreNoQuote = strLine.Mid(9);
+          genreNoQuote.TrimLeft();
+          if (!genreNoQuote.IsEmpty())
+          {
+            g_charsetConverter.unknownToUTF8(genreNoQuote);
+            m_Track[m_iTotalTracks].strGenre = genreNoQuote;
+          }
+        }
+      }
+    }
+    else if (strLine.Left(11) == "REM COMMENT")
+    {
+      if (!ExtractQuoteInfo(strLine, m_Track[m_iTotalTracks].strComment))
+      {
+        CStdString commentNoQuote = strLine.Mid(11);
+        commentNoQuote.TrimLeft();
+        if (!commentNoQuote.IsEmpty())
+        {
+          g_charsetConverter.unknownToUTF8(commentNoQuote);
+          m_Track[m_iTotalTracks].strComment = commentNoQuote;
         }
       }
     }
@@ -233,7 +264,10 @@ void CCueDocument::GetSongs(VECSONGS &songs)
       song.artist = StringUtils::Split(m_Track[i].strArtist, g_advancedSettings.m_musicItemSeparator);
     song.albumArtist = StringUtils::Split(m_strArtist, g_advancedSettings.m_musicItemSeparator);
     song.strAlbum = m_strAlbum;
-    song.genre = StringUtils::Split(m_strGenre, g_advancedSettings.m_musicItemSeparator);
+    if ((m_Track[i].strGenre.length() == 0) && (m_strGenre.length() > 0))
+      song.genre = StringUtils::Split(m_strGenre, g_advancedSettings.m_musicItemSeparator);
+    else
+      song.genre = StringUtils::Split(m_Track[i].strGenre, g_advancedSettings.m_musicItemSeparator);
     song.iYear = m_iYear;
     song.iTrack = m_Track[i].iTrackNumber;
     if (m_Track[i].strTitle.length() == 0) // No track information for this track!
@@ -241,6 +275,7 @@ void CCueDocument::GetSongs(VECSONGS &songs)
     else
       song.strTitle = m_Track[i].strTitle;
     song.strFileName =  m_Track[i].strFile;
+    song.strComment = m_Track[i].strComment;
     song.iStartOffset = m_Track[i].iStartTime;
     song.iEndOffset = m_Track[i].iEndTime;
     if (song.iEndOffset)
