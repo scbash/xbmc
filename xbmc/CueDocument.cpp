@@ -241,7 +241,10 @@ bool CCueDocument::GetSong(int aTrackNumber, CSong& aSong)
     aSong.artist = StringUtils::Split(track.strArtist, g_advancedSettings.m_musicItemSeparator);
   aSong.albumArtist = StringUtils::Split(m_strArtist, g_advancedSettings.m_musicItemSeparator);
   aSong.strAlbum = m_strAlbum;
-  aSong.genre = StringUtils::Split(m_strGenre, g_advancedSettings.m_musicItemSeparator);
+  if ((track.strGenre.length() == 0) && (m_strGenre.length() > 0))
+    aSong.genre = StringUtils::Split(m_strGenre, g_advancedSettings.m_musicItemSeparator);
+  else
+    aSong.genre = StringUtils::Split(track.strGenre, g_advancedSettings.m_musicItemSeparator);
   aSong.iYear = m_iYear;
   aSong.iTrack = track.iTrackNumber;
   if (m_iDiscNumber > 0)
@@ -251,6 +254,7 @@ bool CCueDocument::GetSong(int aTrackNumber, CSong& aSong)
   else
     aSong.strTitle = track.strTitle;
   aSong.strFileName = track.strFile;
+  aSong.strComment = track.strComment;
   aSong.iStartOffset = track.iStartTime;
   aSong.iEndOffset = track.iEndTime;
   if (aSong.iEndOffset)
@@ -377,7 +381,20 @@ bool CCueDocument::Parse(CueReader& reader, const std::string& strFile)
     }
     else if (StringUtils::StartsWithNoCase(strLine, "REM GENRE"))
     {
-      m_strGenre = ExtractInfo(strLine.substr(9));
+      if (totalTracks == -1) // No tracks yet
+      {
+	// Genre applies to whole disc
+	m_strGenre = ExtractInfo(strLine.substr(9));
+      }
+      else
+      {
+	// Genre applies to single track
+	m_tracks[totalTracks].strGenre = ExtractInfo(strLine.substr(9));
+      }
+    }
+    else if (StringUtils::StartsWithNoCase(strLine, "REM COMMENT"))
+    {
+      m_tracks[totalTracks].strComment = ExtractInfo(strLine.substr(11));
     }
     else if (StringUtils::StartsWithNoCase(strLine, "REM REPLAYGAIN_ALBUM_GAIN"))
       m_albumReplayGain.SetGain(strLine.substr(26));
