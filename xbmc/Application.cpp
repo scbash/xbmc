@@ -3756,8 +3756,10 @@ void CApplication::CheckScreenSaverAndDPMS()
   // * Are we playing a video and it is not paused?
   if ((m_pPlayer->IsPlayingVideo() && !m_pPlayer->IsPaused())
       // * Are we playing some music in fullscreen vis?
-      || (m_pPlayer->IsPlayingAudio() && g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION
-          && !CSettings::Get().GetString("musicplayer.visualisation").empty()))
+      // * SCB: remove extra logic: if audio is playing don't let screen go to sleep
+      //        On Mac Minis (probably all Macs?) audio over HDMI is shut off when monitor
+      //        is put to sleep!
+      || (m_pPlayer->IsPlayingAudio()))
   {
     ResetScreenSaverTimer();
     return;
