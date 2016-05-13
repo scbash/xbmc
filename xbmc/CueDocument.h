@@ -40,6 +40,8 @@ class CCueDocument
     std::string strArtist;
     std::string strTitle;
     std::string strFile;
+    std::string strGenre;
+    std::string strComment;
     int iTrackNumber;
     int iStartTime;
     int iEndTime;
